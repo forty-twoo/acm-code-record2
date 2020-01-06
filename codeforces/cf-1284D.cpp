@@ -1,7 +1,7 @@
 /*
  * @Don't panic: Allons-y!
  * @Author: forty-twoo
- * @LastEditTime : 2020-01-05 18:36:32
+ * @LastEditTime : 2020-01-06 20:34:49
  * @Description: 扫描线
  * @Source: https://codeforces.com/contest/1284/problem/D
  */
@@ -15,6 +15,7 @@ const int MAX=2e5+100;
 const int MOD=998244353;
 typedef long long ll;
 using namespace std;
+multiset<int> Smax,Smin;
 int n;
 struct Node{
     int x,y1,y2,id,op;
@@ -70,9 +71,8 @@ struct SEGT{
         pushup(rt);
         return ans;
     }
-
+ 
 }T;
-
 int main(){
 #ifndef ONLINE_JUDGE
     freopen("data.txt","r",stdin);
@@ -88,23 +88,37 @@ int main(){
     sort(dc+1,dc+1+tot);tot=unique(dc+1,dc+1+tot)-(dc+1);
     sort(node+1,node+1+cnt);
     bool flg=true;
-    int sum=0;
+    set<int>::iterator it;
     for(int i=1;i<=cnt;i++){
         int yy1=lower_bound(dc+1,dc+1+tot,node[i].y1)-dc;
         int yy2=lower_bound(dc+1,dc+1+tot,node[i].y2)-dc;
         if(node[i].op==1){
-            int qry=T.query(1,1,tot,yy1,yy2);
-            if(qry!=sum){
-                flg=false;
-                break;
+            if(Smax.size()){
+                it=Smax.begin();
+                if(*it<yy1)flg=false;
             }
-            T.insert(1,1,tot,yy1,yy2,node[i].op);
+            if(Smin.size()){
+                it=Smin.end();it--;
+                if(*it>yy2)flg=false;
+            }
+            int x=T.query(1,1,tot,yy1,yy2);
+            if(x>0){
+                flg=false;
+            }
+            if(!flg)break;
+            Smax.insert(yy2);Smin.insert(yy1);
+        }else{
+            if((it=Smax.find(yy2))!=Smax.end()){
+                Smax.erase(it);
+            }
+            if((it=Smin.find(yy1))!=Smin.end()){
+                Smin.erase(it);
+            }
+            T.insert(1,1,tot,yy1,yy2,1);
         }
-        sum+=node[i].op;
     }
     if(flg)puts("YES");
     else puts("NO");
-    
 
     return 0;
 }
